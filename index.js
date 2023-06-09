@@ -28,9 +28,17 @@ async function run() {
 
     app.post("/users", async (req, res) => {
       const doc = req.body;
+      //   console.log(doc);
       const allUsers = await usersCollection.find().toArray();
       const isExist = allUsers.find((user) => user.email === doc.email);
-      if (isExist) {
+
+      const isEmailExist = allUsers.find(
+        (user) => user.name === doc.name && user.photo === doc.photo
+      );
+      if (isEmailExist) {
+        return res.status(200);
+      }
+      if (isExist && doc.email) {
         return res.status(200);
       }
       const result = await usersCollection.insertOne(doc);
