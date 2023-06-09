@@ -28,6 +28,11 @@ async function run() {
 
     app.post("/users", async (req, res) => {
       const doc = req.body;
+      const allUsers = await usersCollection.find().toArray();
+      const isExist = allUsers.find((user) => user.email === doc.email);
+      if (isExist) {
+        return res.status(200);
+      }
       const result = await usersCollection.insertOne(doc);
       res.status(200).send(result);
     });
