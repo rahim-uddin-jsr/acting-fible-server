@@ -25,7 +25,26 @@ async function run() {
     const usersCollection = client
       .db("acting-fable")
       .collection("usersCollection");
+    const classesCollection = client
+      .db("acting-fable")
+      .collection("classesCollection");
 
+    //   instructors api
+    app.get("/instructors", async (req, res) => {
+      console.log("hited");
+      const query = { role: "instructor" };
+      const result = await usersCollection.find(query).toArray();
+      res.send(result);
+    });
+      
+    //   classes api
+    app.post("/classes", async (req, res) => {
+      const doc = req.body;
+      console.log(doc);
+      const result = await classesCollection.insertOne(doc);
+      res.status(200).send(result);
+    });
+    // all use api
     app.post("/users", async (req, res) => {
       const doc = req.body;
       //   console.log(doc);
