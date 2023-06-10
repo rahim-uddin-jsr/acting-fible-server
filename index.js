@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 app.use(cors());
@@ -28,6 +28,9 @@ async function run() {
     const classesCollection = client
       .db("acting-fable")
       .collection("classesCollection");
+    const selectedCollection = client
+      .db("acting-fable")
+      .collection("selectedCollection");
 
     //   instructors api
     app.get("/instructors", async (req, res) => {
@@ -53,7 +56,7 @@ async function run() {
       const result = await classesCollection.insertOne(doc);
       res.status(200).send(result);
     });
-    // all use api
+    // all useer api
     app.post("/users", async (req, res) => {
       const doc = req.body;
       //   console.log(doc);
@@ -72,7 +75,36 @@ async function run() {
       const result = await usersCollection.insertOne(doc);
       res.status(200).send(result);
     });
+    // get user by email or photo
+    app.get("/users", async (req, res) => {
+      const email = req.query.email;
+      const photo = req.query.photo;
+      console.log({ email, photo });
+      let filter;
+      if (!email) {
+        filter = { photo: photo };
+      } else {
+        filter = { email: email };
+      }
+      const result = await usersCollection.findOne(filter);
+      res.status(200).send(result);
+    });
+    // post selected classes
+    app.post("/selected", async (req, res) => {
+      const updatedDoc = req.body;
 
+      const result = await selectedCollection.insertOne(updatedDoc);
+      console.log(result);
+      res.status(200).send(result);
+    });
+    // get selected classes by student id
+    app.get("/selected/:studentId", async (req, res) => {
+      const d = req.params.studentId;
+      const query = { studentId: d };
+      const result = await selectedCollection.find(query).toArray();
+      console.log(result);
+      res.status(200).send(result);
+    });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
