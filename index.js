@@ -36,8 +36,17 @@ async function run() {
       const result = await usersCollection.find(query).toArray();
       res.send(result);
     });
-      
+
     //   classes api
+    app.get("/classes", async (req, res) => {
+      const status = req.query.role;
+      let query;
+      if (status === "approved") {
+        query = { status: "approved" };
+      }
+      const result = await classesCollection.find(query).toArray();
+      res.status(200).send(result);
+    });
     app.post("/classes", async (req, res) => {
       const doc = req.body;
       console.log(doc);
