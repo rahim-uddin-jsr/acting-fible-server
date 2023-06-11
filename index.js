@@ -53,6 +53,9 @@ async function run() {
     const selectedCollection = client
       .db("acting-fable")
       .collection("selectedCollection");
+    const feedbackCollection = client
+      .db("acting-fable")
+      .collection("feedbackCollection");
 
     app.post("/jwt", (req, res) => {
       const user = req.body;
@@ -109,19 +112,32 @@ async function run() {
       res.status(200).send(result);
     });
     app.put("/classes/:id", async (req, res) => {
+      console.log("hitted");
       const body = req.body;
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const updateDoc = {
-        $set: {
-          status: body.newStatus,
-        },
-      };
-
-      const result = await classesCollection.updateOne(query, updateDoc);
-      res.status(200).send(result);
+      console.log(req.query.feedback);
+      if (req.query.feedback) {
+        const updateDoc = {
+          $set: {
+            feedback: body.feedback,
+          },
+        };
+        const result = await classesCollection.updateOne(query, updateDoc, {
+          upsert: true,
+        });
+        res.status(200).send(result);
+      } else {
+        const updateDoc = {
+          $set: {
+            status: body.newStatus,
+          },
+        };
+        const result = await classesCollection.updateOne(query, updateDoc);
+        res.status(200).send(result);
+      }
     });
-    // all useer api
+    // post user api
     app.post("/users", async (req, res) => {
       const doc = req.body;
       //   console.log(doc);
@@ -140,9 +156,24 @@ async function run() {
       const result = await usersCollection.insertOne(doc);
       res.status(200).send(result);
     });
-    // get user by email or photo
+    // get all users
     app.get("/users", async (req, res) => {
       const result = await usersCollection.find().toArray();
+      res.status(200).send(result);
+    });
+    // get user by uid
+    app.put("/users/:id", async (req, res) => {
+      const body = req.body;
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          role: body.role,
+        },
+      };
+      const result = await usersCollection.updateOne(query, updateDoc, {
+        upsert: true,
+      });
       res.status(200).send(result);
     });
     // app.get("/users", async (req, res) => {
@@ -171,6 +202,14 @@ async function run() {
       const d = req.params.studentId;
       const query = { studentId: d };
       const result = await selectedCollection.find(query).toArray();
+      console.log(result);
+      res.status(200).send(result);
+    });
+    // feedback
+    app.post("/feedback", async (req, res) => {
+      const body = req.body;
+      console.log(body);
+      const result = await feedbackCollection.updateOne(req.body);
       console.log(result);
       res.status(200).send(result);
     });
