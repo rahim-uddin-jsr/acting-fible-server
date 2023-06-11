@@ -83,6 +83,10 @@ async function run() {
       if (user?.role === "instructor") {
         role = { role: "instructor" };
       }
+      if (user?.role === "student") {
+        role = { role: "student" };
+      }
+      console.log(role);
       res.send(role);
     });
 
@@ -192,15 +196,21 @@ async function run() {
     // post selected classes
     app.post("/selected", async (req, res) => {
       const updatedDoc = req.body;
-
       const result = await selectedCollection.insertOne(updatedDoc);
       console.log(result);
       res.status(200).send(result);
     });
     // get selected classes by student id
-    app.get("/selected/:studentId", async (req, res) => {
-      const d = req.params.studentId;
-      const query = { studentId: d };
+    app.get("/selected/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const decodedEmail = req.decoded.email;
+      if (email !== decodedEmail) {
+        return res
+          .status(403)
+          .send({ error: true, message: "forbidden access" });
+      }
+
+      const query = { email: email };
       const result = await selectedCollection.find(query).toArray();
       console.log(result);
       res.status(200).send(result);
