@@ -64,24 +64,21 @@ async function run() {
     });
 
     // get user is role
-    app.get("/users/role/:email", verifyJWT, async (req, res) => {
+    app.get("/users/role/:email", async (req, res) => {
       const email = req.params.email;
 
-      if (req.decoded.email !== email) {
-        res.send({ admin: false });
-      }
+      // if (req.decoded.email !== email) {
+      //   res.send({ admin: false });
+      // }
 
       const query = { email: email };
       const user = await usersCollection.findOne(query);
-      let role;
+      let role = "student";
       if (user?.role === "admin") {
         role = { role: "admin" };
       }
       if (user?.role === "instructor") {
         role = { role: "instructor" };
-      }
-      if (user?.role === "student") {
-        role = { role: "student" };
       }
       res.send(role);
     });
@@ -97,17 +94,31 @@ async function run() {
     //   classes api
     app.get("/classes", async (req, res) => {
       const status = req.query.role;
-      let query;
+      let query = {};
       if (status === "approved") {
         query = { status: "approved" };
       }
       const result = await classesCollection.find(query).toArray();
       res.status(200).send(result);
     });
-    app.post("/classes", async (req, res) => {
+
+    app.post("/classes", verifyJWT, async (req, res) => {
       const doc = req.body;
       console.log(doc);
       const result = await classesCollection.insertOne(doc);
+      res.status(200).send(result);
+    });
+    app.put("/classes/:id", async (req, res) => {
+      const body = req.body;
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: body.newStatus,
+        },
+      };
+
+      const result = await classesCollection.updateOne(query, updateDoc);
       res.status(200).send(result);
     });
     // all useer api
@@ -131,18 +142,22 @@ async function run() {
     });
     // get user by email or photo
     app.get("/users", async (req, res) => {
-      const email = req.query.email;
-      const photo = req.query.photo;
-      console.log({ email, photo });
-      let filter;
-      if (!email) {
-        filter = { photo: photo };
-      } else {
-        filter = { email: email };
-      }
-      const result = await usersCollection.findOne(filter);
+      const result = await usersCollection.find().toArray();
       res.status(200).send(result);
     });
+    // app.get("/users", async (req, res) => {
+    //   const email = req.query.email;
+    //   const photo = req.query.photo;
+    //   console.log({ email, photo });
+    //   let filter;
+    //   if (!email) {
+    //     filter = { photo: photo };
+    //   } else {
+    //     filter = { email: email };
+    //   }
+    //   const result = await usersCollection.findOne(filter);
+    //   res.status(200).send(result);
+    // });
     // post selected classes
     app.post("/selected", async (req, res) => {
       const updatedDoc = req.body;
