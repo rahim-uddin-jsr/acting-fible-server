@@ -200,6 +200,14 @@ async function run() {
       console.log(result);
       res.status(200).send(result);
     });
+    // delete from selection
+    app.delete("/selected/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await selectedCollection.deleteOne(query);
+      console.log(result);
+      res.status(200).send(result);
+    });
     // get selected classes by student id
     app.get("/selected/:email", verifyJWT, async (req, res) => {
       const email = req.params.email;
@@ -215,6 +223,7 @@ async function run() {
       console.log(result);
       res.status(200).send(result);
     });
+
     // feedback
     app.post("/feedback", async (req, res) => {
       const body = req.body;
