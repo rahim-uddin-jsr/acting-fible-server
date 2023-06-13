@@ -170,7 +170,7 @@ async function run() {
       const result = await usersCollection.find().toArray();
       res.status(200).send(result);
     });
-    // get user by uid
+    // update user by uid
     app.put("/users/:id", async (req, res) => {
       const body = req.body;
       const id = req.params.id;
@@ -269,6 +269,32 @@ async function run() {
       res.send({ insertResult, deleteResult, updateResult });
     });
 
+    // get payments by email
+    app.get("/payments/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const decodedEmail = req.decoded.email;
+      if (email !== decodedEmail) {
+        return res
+          .status(403)
+          .send({ error: true, message: "forbidden access" });
+      }
+
+      const query = { email: email };
+      const payments = await paymentCollection.find(query).toArray();
+      const classIds = payments.map((classes) => classes.classIds);
+      const mergedIds = classIds.flat();
+      console.log(mergedIds);
+
+      const filter = {
+        _id: {
+          $in: mergedIds.map((id) => new ObjectId(id)),
+        },
+      };
+
+      const result = await classesCollection.find(filter).toArray();
+      console.log(result);
+      res.status(200).send(result);
+    });
     // feedback
     app.post("/feedback", async (req, res) => {
       const body = req.body;
