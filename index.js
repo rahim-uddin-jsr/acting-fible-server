@@ -278,9 +278,15 @@ async function run() {
           .status(403)
           .send({ error: true, message: "forbidden access" });
       }
-
+      const isPayments = req.query.isPayments;
       const query = { email: email };
-      const payments = await paymentCollection.find(query).toArray();
+      const payments = await paymentCollection
+        .find(query)
+        .sort({ date: -1 })
+        .toArray();
+      if (isPayments) {
+        return res.status(200).send(payments);
+      }
       const classIds = payments.map((classes) => classes.classIds);
       const mergedIds = classIds.flat();
       console.log(mergedIds);
