@@ -122,6 +122,10 @@ async function run() {
     //   instructors api
     app.get("/instructors", async (req, res) => {
       const query = { role: "instructor" };
+      if ((popular = "1")) {
+        const result = await usersCollection.find(query).limit(6).toArray();
+        return res.send(result);
+      }
       const result = await usersCollection.find(query).toArray();
       res.send(result);
     });
