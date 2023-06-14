@@ -133,6 +133,15 @@ async function run() {
       if (status === "approved") {
         query = { status: "approved" };
       }
+      // for get popular 6 classes
+      if (req.query.popular === "1") {
+        const result = await classesCollection
+          .find({ totalStudent: { $exists: true } })
+          .sort({ totalStudent: -1 })
+          .limit(6)
+          .toArray();
+        return res.status(200).send(result);
+      }
       const result = await classesCollection.find(query).toArray();
       res.status(200).send(result);
     });
